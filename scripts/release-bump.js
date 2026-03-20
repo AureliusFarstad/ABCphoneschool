@@ -31,11 +31,15 @@ const run = (command, args) => {
 
 const readReleaseVersion = () => {
   const content = readFileSync(appConfigPath, "utf8");
-  const versionName = content.match(/const\s+VERSION_NAME\s*=\s*"([\d.]+)";/)?.[1];
+  const versionName = content.match(
+    /const\s+VERSION_NAME\s*=\s*"([\d.]+)";/,
+  )?.[1];
   const versionCode = content.match(/const\s+VERSION_CODE\s*=\s*(\d+);/)?.[1];
 
   if (!versionName || !versionCode) {
-    throw new Error("Could not read VERSION_NAME and VERSION_CODE from app.config.ts");
+    throw new Error(
+      "Could not read VERSION_NAME and VERSION_CODE from app.config.ts",
+    );
   }
 
   return { versionName, versionCode };
