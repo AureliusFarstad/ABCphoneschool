@@ -1,8 +1,8 @@
-# Refugee Literacy Project
+# ABCphoneschool
 
 ## Introduction
 
-"Refugee Literacy Project" is a project aimed at addressing the pressing issue of limited literacy skills among some refugees in Europe. The project recognizes the critical role that literacy plays in a person's life, influencing integration, access to opportunities, and overall well-being. Through this initiative, we aspire to **develop a highly accessible digital resource to support analphabetic adults in acquiring fundamental literacy skills**, thus enabling them to rebuild their lives with confidence in a new and unfamiliar environment.
+"ABCphoneschool" is a project aimed at addressing the pressing issue of limited literacy skills among some refugees in Europe. The project recognizes the critical role that literacy plays in a person's life, influencing integration, access to opportunities, and overall well-being. Through this initiative, we aspire to **develop a highly accessible digital resource to support analphabetic adults in acquiring fundamental literacy skills**, thus enabling them to rebuild their lives with confidence in a new and unfamiliar environment.
 
 ## Features
 
