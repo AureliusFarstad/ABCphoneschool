@@ -1,5 +1,5 @@
-import { Audio } from "expo-av";
-import type { Sound } from "expo-av/build/Audio";
+import type { AudioPlayer } from "expo-audio";
+import { createAudioPlayer } from "expo-audio";
 import type { ReactElement, RefObject } from "react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -22,7 +22,7 @@ import Reanimated, {
 
 import { requireEnglishAudioForWord } from "@/assets/blending";
 import { APP_COLORS } from "@/constants/routes";
-import { audioStoreActions } from "@/core/store/audio";
+import { audioStoreActions, releasePlayer } from "@/core/store/audio";
 import type { ButtonColorProps } from "@/ui/icons/circular/color-scheme";
 import { EnglishButton } from "@/ui/icons/circular/english-button";
 
@@ -722,7 +722,7 @@ const AudioMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
     useState<boolean>(false);
 
   // Refs
-  const currentSound = useRef<Sound | null>(null);
+  const currentSound = useRef<AudioPlayer | null>(null);
 
   // Constants for current game
   const CORRECT_BUTTON_ID: string = gameSet.correctAnswerId;
@@ -921,7 +921,7 @@ const AudioMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
       );
       if (currentSound.current) {
         try {
-          currentSound.current.unloadAsync();
+          releasePlayer(currentSound.current);
         } catch (e) {
           // Ignore error
         }
@@ -939,8 +939,7 @@ const AudioMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
       // Stop any currently playing audio from this component
       if (currentSound.current) {
         try {
-          await currentSound.current.stopAsync();
-          await currentSound.current.unloadAsync();
+          releasePlayer(currentSound.current);
         } catch (e) {
           // Ignore error cleaning up previous sound
         }
@@ -951,9 +950,8 @@ const AudioMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
       setPlayingButtonId(buttonId);
 
       try {
-        const { sound } = await Audio.Sound.createAsync(audioFile, {
-          shouldPlay: true,
-        });
+        const sound = createAudioPlayer(audioFile);
+        sound.play();
 
         // Store the current sound
         currentSound.current = sound;
@@ -962,7 +960,7 @@ const AudioMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
         let isHandled = false;
 
         // Listen for playback status updates
-        sound.setOnPlaybackStatusUpdate((status) => {
+        sound.addListener("playbackStatusUpdate", (status) => {
           if (isHandled) return;
 
           if (!status.isLoaded) return;
@@ -983,7 +981,7 @@ const AudioMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
 
             // Unload the sound
             try {
-              sound.unloadAsync();
+              releasePlayer(sound);
             } catch (e) {
               // Ignore error
             }
@@ -1012,7 +1010,7 @@ const AudioMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
           audioStoreActions.clearCurrentSound();
 
           try {
-            sound.unloadAsync();
+            releasePlayer(sound);
             if (currentSound.current === sound) {
               currentSound.current = null;
             }
@@ -1064,8 +1062,7 @@ const AudioMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
           setTimeout(() => {
             // Stop any ongoing animations or sounds
             if (currentSound.current) {
-              currentSound.current.stopAsync().catch(() => {});
-              currentSound.current.unloadAsync().catch(() => {});
+              releasePlayer(currentSound.current);
               currentSound.current = null;
             }
             setPlayingButtonId(null);

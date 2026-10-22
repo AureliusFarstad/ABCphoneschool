@@ -1,4 +1,4 @@
-import type { AVPlaybackSource } from "expo-av";
+import type { AudioSource } from "expo-audio";
 
 import { useUser } from "@/core/store/user";
 
@@ -27,10 +27,10 @@ export type IEnglish_Vocabulary_Audio_Source = Partial<
   Record<
     AllValidWords,
     {
-      complete: AVPlaybackSource;
-      snail_speed_complete: AVPlaybackSource;
-      contracted?: AVPlaybackSource;
-      snail_speed_contracted?: AVPlaybackSource;
+      complete: AudioSource;
+      snail_speed_complete: AudioSource;
+      contracted?: AudioSource;
+      snail_speed_contracted?: AudioSource;
     }
   >
 >;
@@ -39,8 +39,8 @@ export type INative_Vocabulary_Audio_Source = Partial<
   Record<
     AllValidWords,
     {
-      complete: AVPlaybackSource;
-      contracted?: AVPlaybackSource;
+      complete: AudioSource;
+      contracted?: AudioSource;
     }
   >
 >;
@@ -51,7 +51,7 @@ export type IVocabulary_Image_Source = Partial<
 
 export const requireCompleteEnglishAudioForWord = (
   word: AllValidWords,
-): AVPlaybackSource => {
+): AudioSource => {
   const audio = ENGLISH_VOCABULARY_AUDIO[word]?.complete;
   if (!audio) {
     throw new Error(`English audio file not found for word: ${word}`);
@@ -61,7 +61,7 @@ export const requireCompleteEnglishAudioForWord = (
 
 export const requireSnailSpeedCompleteEnglishAudioForWord = (
   word: AllValidWords,
-): AVPlaybackSource => {
+): AudioSource => {
   const audio = ENGLISH_VOCABULARY_AUDIO[word]?.snail_speed_complete;
   if (!audio) {
     throw new Error(`English audio file not found for word: ${word}`);
@@ -71,7 +71,7 @@ export const requireSnailSpeedCompleteEnglishAudioForWord = (
 
 export const requireCompleteNativeAudioForWord = (
   word: AllValidWords,
-): AVPlaybackSource => {
+): AudioSource => {
   // Get current language from store - getState() is performant and doesn't cause re-renders
   const { language } = useUser.getState();
 

@@ -1,4 +1,4 @@
-import type { AVPlaybackSource } from "expo-av";
+import type { AudioSource } from "expo-audio";
 import { router } from "expo-router";
 import { useCallback } from "react";
 import { Pressable, View } from "react-native";
@@ -88,7 +88,7 @@ const SIZE = 40;
 
 type HeaderProps = {
   title: string;
-  audioSource: AVPlaybackSource | string;
+  audioSource: AudioSource | string;
 };
 
 const Header = ({ audioSource }: HeaderProps) => {

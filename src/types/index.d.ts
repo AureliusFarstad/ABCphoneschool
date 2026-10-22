@@ -3,6 +3,10 @@ type F0<RT = void> = () => RT;
 // A function that takes an argument and returns a type.
 type F1<T, RT = void> = (arg: T) => RT;
 
+// A top-level import would turn this file into a module, so reference the type inline.
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+type AudioSource = import("expo-audio").AudioSource;
+
 interface ILevel {
   id: string;
   title: string;
@@ -50,11 +54,11 @@ interface IActivity {
   type: "MATCH_THE_LETTER" | "MATCH_THE_SOUND" | "MATCH_THE_NAME";
   character: string;
   correctAnswer: Option;
-  audio: AVPlaybackSource;
+  audio: AudioSource;
   options: Option[];
   sound: {
-    alphabeticAudioSrc: AVPlaybackSource;
-    phoneticAudioSrc: AVPlaybackSource;
+    alphabeticAudioSrc: AudioSource;
+    phoneticAudioSrc: AudioSource;
   };
   letter: {
     lowerCase: string;
@@ -79,7 +83,7 @@ interface IActivityWithSoundAndName {
   numberOfTimesCorrectAnswerGiven: number;
   type: "MATCH_THE_LETTER" | "MATCH_THE_SOUND" | "MATCH_THE_NAME";
   correctAnswer: Option;
-  audio: AVPlaybackSource;
+  audio: AudioSource;
   options: Option[];
 }
 

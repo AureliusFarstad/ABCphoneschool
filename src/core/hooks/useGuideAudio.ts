@@ -1,9 +1,9 @@
-import { Audio, type AVPlaybackSource, type AVPlaybackStatus } from "expo-av";
-import type { Sound } from "expo-av/build/Audio";
+import type { AudioPlayer, AudioSource, AudioStatus } from "expo-audio";
+import { createAudioPlayer } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { audioStoreActions } from "@/core/store/audio";
+import { audioStoreActions, releasePlayer } from "@/core/store/audio";
 import type { CombinedRoutes } from "@/types/navigation-types";
 import { getGuides } from "@/utils/shared";
 
@@ -13,7 +13,7 @@ type GuideAudioProps = {
 };
 
 export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
-  const soundRef = useRef<Sound | null>(null);
+  const soundRef = useRef<AudioPlayer | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const isMountedRef = useRef(true);
 
@@ -37,45 +37,30 @@ export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
     return () => {
       isMountedRef.current = false;
       if (soundInstanceAtEffectStart) {
-        const cleanupSound = async () => {
-          try {
-            const status = await soundInstanceAtEffectStart.getStatusAsync();
-            if (status.isLoaded) {
-              await soundInstanceAtEffectStart.stopAsync();
-            }
-            await soundInstanceAtEffectStart.unloadAsync();
-          } catch (error) {
-            if (
-              !(
-                error instanceof Error &&
-                error.message.includes("sound is not loaded")
-              )
-            ) {
-              console.warn(
-                `[useGuideAudio] Cleanup: Error stopping/unloading sound for ${screenName}:`,
-                (error as Error).message,
-              );
-            }
-          }
-        };
-        cleanupSound().then(() => {
-          if (soundRef.current === soundInstanceAtEffectStart) {
-            soundRef.current = null;
-          }
-        });
+        try {
+          releasePlayer(soundInstanceAtEffectStart);
+        } catch (error) {
+          console.warn(
+            `[useGuideAudio] Cleanup: Error stopping/unloading sound for ${screenName}:`,
+            (error as Error).message,
+          );
+        }
+        if (soundRef.current === soundInstanceAtEffectStart) {
+          soundRef.current = null;
+        }
       }
     };
   }, [screenName]);
 
   const playSequentialSounds = useCallback(
-    async (playbackSources: AVPlaybackSource[]) => {
+    async (playbackSources: AudioSource[]) => {
       if (!isMountedRef.current) {
         return;
       }
 
       if (soundRef.current) {
         try {
-          await soundRef.current.unloadAsync();
+          releasePlayer(soundRef.current);
         } catch (e) {
           console.warn(
             "[useGuideAudio] playSequentialSounds: Error unloading existing soundRef.current",
@@ -88,16 +73,14 @@ export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
       let currentSoundIndex = 0;
       const playNextSound = async () => {
         if (!isMountedRef.current) {
-          if (soundRef.current)
-            await soundRef.current.unloadAsync().catch((e) => console.warn(e));
+          if (soundRef.current) releasePlayer(soundRef.current);
           soundRef.current = null;
           if (isMountedRef.current) setIsPlaying(false);
           audioStoreActions.clearCurrentSound();
           return;
         }
         if (currentSoundIndex >= playbackSources.length) {
-          if (soundRef.current)
-            await soundRef.current.unloadAsync().catch((e) => console.warn(e));
+          if (soundRef.current) releasePlayer(soundRef.current);
           soundRef.current = null;
           if (isMountedRef.current) setIsPlaying(false);
           audioStoreActions.clearCurrentSound();
@@ -111,54 +94,42 @@ export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
             console.warn(
               "[useGuideAudio] playSequentialSounds: soundRef.current was not null before creating new sound. This should not happen if previous unload was successful.",
             );
-            await soundRef.current.unloadAsync().catch((e) => console.warn(e));
+            releasePlayer(soundRef.current);
             soundRef.current = null;
           }
 
-          const { sound: newSound } = await Audio.Sound.createAsync(source, {
-            shouldPlay: true,
-          });
-          if (!isMountedRef.current) {
-            await newSound.unloadAsync();
-            return;
-          }
+          const newSound = createAudioPlayer(source);
+          newSound.play();
           soundRef.current = newSound;
 
-          newSound.setOnPlaybackStatusUpdate((status: AVPlaybackStatus) => {
-            if (!isMountedRef.current && newSound === soundRef.current) {
-              if (soundRef.current) {
-                soundRef.current
-                  .unloadAsync()
-                  .catch((e) =>
+          const subscription = newSound.addListener(
+            "playbackStatusUpdate",
+            (status: AudioStatus) => {
+              if (!isMountedRef.current && newSound === soundRef.current) {
+                if (soundRef.current) {
+                  try {
+                    releasePlayer(soundRef.current);
+                  } catch (e) {
                     console.warn(
                       "Error unloading sound on status update after unmount",
                       e,
-                    ),
-                  );
-                soundRef.current = null;
+                    );
+                  }
+                  soundRef.current = null;
+                }
+                return;
               }
-              return;
-            }
 
-            if (!status.isLoaded) {
-              if (status.error) {
-                console.error(
-                  "[useGuideAudio] playSequentialSounds: Playback Error:",
-                  status.error,
-                );
-                newSound.setOnPlaybackStatusUpdate(null);
-                if (soundRef.current === newSound) soundRef.current = null;
-                if (isMountedRef.current) setIsPlaying(false);
-                audioStoreActions.clearCurrentSound();
+              if (!status.isLoaded) {
+                return;
               }
-              return;
-            }
-            if (status.didJustFinish) {
-              newSound.setOnPlaybackStatusUpdate(null);
-              currentSoundIndex++;
-              playNextSound();
-            }
-          });
+              if (status.didJustFinish) {
+                subscription.remove();
+                currentSoundIndex++;
+                playNextSound();
+              }
+            },
+          );
 
           // Register with global audio store
           await audioStoreActions.registerSound(newSound);
@@ -168,14 +139,14 @@ export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
             error,
           );
           if (soundRef.current) {
-            await soundRef.current
-              .unloadAsync()
-              .catch((e) =>
-                console.warn(
-                  "Error unloading sound in playSequentialSounds catch",
-                  e,
-                ),
+            try {
+              releasePlayer(soundRef.current);
+            } catch (e) {
+              console.warn(
+                "Error unloading sound in playSequentialSounds catch",
+                e,
               );
+            }
             soundRef.current = null;
           }
           if (isMountedRef.current) setIsPlaying(false);
@@ -193,23 +164,12 @@ export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
 
     if (soundToStop) {
       try {
-        const status = await soundToStop.getStatusAsync();
-        if (status.isLoaded) {
-          await soundToStop.stopAsync();
-        }
-        await soundToStop.unloadAsync();
+        releasePlayer(soundToStop);
       } catch (error) {
-        // Ignore expected errors when audio is interrupted
-        const isExpectedError =
-          error instanceof Error &&
-          (error.message.includes("sound is not loaded") ||
-            error.message.includes("Seeking interrupted"));
-        if (!isExpectedError) {
-          console.error(
-            "[useGuideAudio] stopGuideAudio: Error stopping/unloading sound:",
-            error,
-          );
-        }
+        console.error(
+          "[useGuideAudio] stopGuideAudio: Error stopping/unloading sound:",
+          error,
+        );
       } finally {
         if (soundRef.current === soundToStop) {
           soundRef.current = null;
@@ -252,11 +212,11 @@ export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
     } catch (error) {
       console.error("[useGuideAudio] playGuideAudio: Error in process:", error);
       if (soundRef.current) {
-        await soundRef.current
-          .unloadAsync()
-          .catch((e) =>
-            console.warn("Error unloading in playGuideAudio catch", e),
-          );
+        try {
+          releasePlayer(soundRef.current);
+        } catch (e) {
+          console.warn("Error unloading in playGuideAudio catch", e);
+        }
         soundRef.current = null;
       }
       if (isMountedRef.current) setIsPlaying(false);

@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import type { AVPlaybackSource } from "expo-av";
+import type { AudioSource } from "expo-audio";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
 import { State } from "react-native-gesture-handler";
@@ -69,7 +69,7 @@ type WordGameData = {
       id: string;
       content: string;
       description: string;
-      audio: AVPlaybackSource;
+      audio: AudioSource;
     }[];
   };
 };

@@ -1,10 +1,10 @@
-import type { AVPlaybackSource } from "expo-av";
+import type { AudioSource } from "expo-audio";
 
 import { GUIDANCE_AUDIO_SOURCES_BY_LANGUAGE } from "@/assets/guidance-audio/audio-sources";
 import { useUser } from "@/core/store/user";
 import type { CombinedRoutes } from "@/types/navigation-types";
 
-type AudioFile = AVPlaybackSource;
+type AudioFile = AudioSource;
 
 export const getGuides = async (
   screenName: CombinedRoutes,

@@ -1,6 +1,5 @@
-import type { AVPlaybackSource } from "expo-av";
-import { Audio } from "expo-av";
-import type { Sound } from "expo-av/build/Audio";
+import type { AudioPlayer } from "expo-audio";
+import { createAudioPlayer } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useFocusEffect } from "expo-router";
 import React from "react";
@@ -22,7 +21,7 @@ import {
 import { SECTION_COLORS } from "@/constants/routes";
 import { APP_COLORS } from "@/constants/routes";
 import { useGuideAudio } from "@/core/hooks/useGuideAudio";
-import { audioStoreActions } from "@/core/store/audio";
+import { audioStoreActions, releasePlayer } from "@/core/store/audio";
 import GuidanceAudioHeader from "@/ui/core/headers/guidance-audio";
 import { AnimatedAudioButton } from "@/ui/icons/animated-audio-button-wrapper";
 import type { ButtonColorProps } from "@/ui/icons/circular/color-scheme";
@@ -99,7 +98,7 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
   state,
   onAudioComplete,
 }) => {
-  const [sound, setSound] = React.useState<Sound>();
+  const [sound, setSound] = React.useState<AudioPlayer>();
   const [isPlaying, setIsPlaying] = React.useState(false);
   const hasAutoPlayed = React.useRef(false);
 
@@ -134,15 +133,15 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
     const currentSound = sound;
     return () => {
       if (currentSound) {
-        currentSound.setOnPlaybackStatusUpdate(null);
-        currentSound
-          .unloadAsync()
-          .catch((e) =>
-            console.warn(
-              `[ConversationCard ${gender}] Error unloading sound in cleanup:`,
-              (e as Error).message,
-            ),
+        currentSound.removeAllListeners("playbackStatusUpdate");
+        try {
+          releasePlayer(currentSound);
+        } catch (e) {
+          console.warn(
+            `[ConversationCard ${gender}] Error unloading sound in cleanup:`,
+            (e as Error).message,
           );
+        }
       }
     };
   }, [sound, gender]);
@@ -155,9 +154,8 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
 
       if (sound) {
         try {
-          await sound.stopAsync();
-          sound.setOnPlaybackStatusUpdate(null);
-          await sound.unloadAsync();
+          sound.removeAllListeners("playbackStatusUpdate");
+          releasePlayer(sound);
         } catch (e: unknown) {
           console.warn(
             `[playEnglishAudio on card ${gender}] Warning: Error stopping/unloading previous sound: `,
@@ -173,41 +171,28 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
           ? { uri: englishAudioFile }
           : englishAudioFile;
 
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        source as AVPlaybackSource,
-        {
-          shouldPlay: false,
-        },
-      );
+      const newSound = createAudioPlayer(source);
       setSound(newSound);
 
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded) {
-          if (status.didJustFinish) {
-            console.log("Audio finished");
-            setIsPlaying(false);
-            deactivateKeepAwake("conversation-audio");
-            audioStoreActions.clearCurrentSound();
-            onAudioComplete?.();
-            return;
-          }
+      newSound.addListener("playbackStatusUpdate", (status) => {
+        // Status updates arrive before the sound has loaded; ignore those
+        if (!status.isLoaded) {
+          return;
+        }
 
-          if (isPlaying && !status.isPlaying && !status.didJustFinish) {
-            console.log(
-              "Playback stopped unexpectedly (isLoaded=true, but not playing and not finished).",
-            );
-            setIsPlaying(false);
-            deactivateKeepAwake("conversation-audio");
-            audioStoreActions.clearCurrentSound();
-            onAudioComplete?.();
-          }
-        } else {
-          if (status.error) {
-            console.error(
-              "Playback Status Error (isLoaded=false):",
-              status.error,
-            );
-          }
+        if (status.didJustFinish) {
+          console.log("Audio finished");
+          setIsPlaying(false);
+          deactivateKeepAwake("conversation-audio");
+          audioStoreActions.clearCurrentSound();
+          onAudioComplete?.();
+          return;
+        }
+
+        if (isPlaying && !status.playing && !status.didJustFinish) {
+          console.log(
+            "Playback stopped unexpectedly (isLoaded=true, but not playing and not finished).",
+          );
           setIsPlaying(false);
           deactivateKeepAwake("conversation-audio");
           audioStoreActions.clearCurrentSound();
@@ -215,10 +200,15 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
         }
       });
 
-      // Register with global audio store
-      await audioStoreActions.registerSound(newSound);
+      // Register with global audio store. When another sound stops this one,
+      // finish the card, as expo-av did when it reported the sound unloaded.
+      await audioStoreActions.registerSound(newSound, () => {
+        setIsPlaying(false);
+        deactivateKeepAwake("conversation-audio");
+        onAudioComplete?.();
+      });
 
-      await newSound.playAsync();
+      newSound.play();
     } catch (error: unknown) {
       console.error("Error playing English audio:", (error as Error).message);
       onAudioComplete?.();
@@ -247,15 +237,15 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
         setIsPlaying(false);
         deactivateKeepAwake("conversation-audio");
         if (sound) {
-          sound.setOnPlaybackStatusUpdate(null);
-          sound
-            .stopAsync()
-            .catch((e) =>
-              console.error(
-                `[ConversationCard ${gender}] Error stopping sound on state change:`,
-                e,
-              ),
+          sound.removeAllListeners("playbackStatusUpdate");
+          try {
+            sound.pause();
+          } catch (e) {
+            console.error(
+              `[ConversationCard ${gender}] Error stopping sound on state change:`,
+              e,
             );
+          }
         }
       }
     }

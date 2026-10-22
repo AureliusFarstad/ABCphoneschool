@@ -216,7 +216,7 @@ const InteractiveVideoPlayer = ({
           playSound(segment.audio)
             .then((sound) => {
               if (sound) {
-                sound.setOnPlaybackStatusUpdate((status) => {
+                sound.addListener("playbackStatusUpdate", (status) => {
                   if (status.isLoaded && status.didJustFinish) {
                     console.log("Audio completed");
                     setAudioCompleted(true);
@@ -326,7 +326,7 @@ const InteractiveVideoPlayer = ({
       playSound(currentSegment.audio)
         .then((sound) => {
           if (sound) {
-            sound.setOnPlaybackStatusUpdate((status) => {
+            sound.addListener("playbackStatusUpdate", (status) => {
               if (status.isLoaded && status.didJustFinish) {
                 console.log("Play button: Audio completed");
                 setAudioCompleted(true);
