@@ -602,11 +602,11 @@ const styles = StyleSheet.create({
   },
   overlayContainer: {
     // Fills the videoScreenContainer
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   blurViewStyle: {
     // Fills its parent (overlayContainer) and centers content
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
   },
