@@ -9,7 +9,6 @@ const VERSION_CODE = 1000001;
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: Env.NAME,
-  newArchEnabled: true,
   description: `${Env.NAME} Mobile App`,
   owner: Env.EXPO_ACCOUNT_OWNER,
   scheme: Env.SCHEME,
@@ -49,7 +48,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: Env.PACKAGE,
     versionCode: VERSION_CODE,
-    edgeToEdgeEnabled: true,
   },
   web: {
     favicon: "./assets/images/favicon.png",
