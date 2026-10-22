@@ -52,7 +52,6 @@
     "@expo/vector-icons": "^15.0.2",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@radix-ui/react-compose-refs": "^1.0.1",
-    "@react-navigation/native": "^7.5.1",
     "@shopify/react-native-skia": "2.6.2",
     "@svgator/react-native": "^2.0.1",
     "app-icon-badge": "^0.0.15",
@@ -126,13 +125,6 @@
     "prettier": "^3.3.3",
     "react-native-svg-transformer": "^1.5.0",
     "typescript": "^6.0.3"
-  },
-  "expo": {
-    "install": {
-      "exclude": [
-        "@react-navigation/native"
-      ]
-    }
   },
   "private": true,
   "packageManager": "pnpm@8.15.1"

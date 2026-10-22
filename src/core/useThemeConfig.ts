@@ -1,5 +1,5 @@
-import type { Theme } from "@react-navigation/native";
-import { DefaultTheme } from "@react-navigation/native";
+import type { Theme } from "expo-router";
+import { DefaultTheme } from "expo-router";
 
 import { colors } from "@/ui/theme/colors";
 

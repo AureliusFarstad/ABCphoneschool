@@ -3,11 +3,10 @@
 // 117:5   error  'resumeSound' is assigned a value but never used. Allowed unused vars must match /^_/u                            unused-imports/no-unused-vars
 // 120:16  error  'isAudioPlaying' is assigned a value but never used. Allowed unused vars must match /^_/u                         unused-imports/no-unused-vars
 
-import { useIsFocused } from "@react-navigation/native";
 import welcome from "assets/videos/welcome";
 import { BlurView } from "expo-blur";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
-import { router } from "expo-router";
+import { router, useIsFocused } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,

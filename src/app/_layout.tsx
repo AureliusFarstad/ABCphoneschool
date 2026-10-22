@@ -7,9 +7,8 @@ import {
   Inter_600SemiBold,
   useFonts,
 } from "@expo-google-fonts/inter";
-import { ThemeProvider } from "@react-navigation/native";
 import { setAudioModeAsync } from "expo-audio";
-import { Stack, usePathname } from "expo-router";
+import { Stack, ThemeProvider, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useRef } from "react";
 import { LogBox } from "react-native";
