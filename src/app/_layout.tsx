@@ -8,6 +8,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { ThemeProvider } from "@react-navigation/native";
+import { setAudioModeAsync } from "expo-audio";
 import { Stack, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useRef } from "react";
@@ -32,6 +33,10 @@ LogBox.ignoreLogs([`Text strings must be rendered within a <Text> component.`]);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Play clips even when the iPhone is on silent, and pause other apps' audio
+// (music, podcasts) while a clip plays. Android media ignores silent mode.
+setAudioModeAsync({ playsInSilentMode: true, interruptionMode: "doNotMix" });
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
