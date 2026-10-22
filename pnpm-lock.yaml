@@ -98,9 +98,6 @@ dependencies:
   expo-web-browser:
     specifier: ~14.1.6
     version: 14.1.6(expo@53.0.7)(react-native@0.79.2)
-  lottie-react-native:
-    specifier: 7.2.2
-    version: 7.2.2(react-native@0.79.2)(react@19.0.0)
   moti:
     specifier: ^0.29.0
     version: 0.29.0(react-dom@19.0.0)(react-native-reanimated@3.17.5)(react@19.0.0)
@@ -116,9 +113,6 @@ dependencies:
   react-native:
     specifier: 0.79.2
     version: 0.79.2(@babel/core@7.26.10)(@types/react@19.0.14)(react@19.0.0)
-  react-native-avoid-softinput:
-    specifier: ^5.0.0
-    version: 5.0.0(react-native@0.79.2)(react@19.0.0)
   react-native-awesome-slider:
     specifier: ^2.9.0
     version: 2.9.0(react-native-gesture-handler@2.24.0)(react-native-reanimated@3.17.5)(react-native@0.79.2)(react@19.0.0)
@@ -128,9 +122,6 @@ dependencies:
   react-native-gesture-handler:
     specifier: ~2.24.0
     version: 2.24.0(react-native@0.79.2)(react@19.0.0)
-  react-native-haptic-feedback:
-    specifier: ^2.3.1
-    version: 2.3.3(react-native@0.79.2)
   react-native-heroicons:
     specifier: ^3.2.0
     version: 3.2.1(react-native-svg@15.11.2)(react@19.0.0)
@@ -7902,23 +7893,6 @@ packages:
     dependencies:
       js-tokens: 4.0.0
 
-  /lottie-react-native@7.2.2(react-native@0.79.2)(react@19.0.0):
-    resolution: {integrity: sha512-pp3dnFVFZlfZzIL5qKGXju2d6RfnYhPbb8xQL9dYqvPbPy2EbnK2aFlv6jAZLYh0QjUGPEmRAgAAnsOOtT+H9Q==}
-    peerDependencies:
-      '@lottiefiles/dotlottie-react': ^0.6.5
-      react: '*'
-      react-native: '>=0.46'
-      react-native-windows: '>=0.63.x'
-    peerDependenciesMeta:
-      '@lottiefiles/dotlottie-react':
-        optional: true
-      react-native-windows:
-        optional: true
-    dependencies:
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.26.10)(@types/react@19.0.14)(react@19.0.0)
-    dev: false
-
   /lower-case@2.0.2:
     resolution: {integrity: sha512-7fm3l3NAF9WfN6W3JOmf5drwpVqX78JtoGJ3A6W0a6ZnldM41w2fV5D490psKFTpMds8TJse/eHLFFsNHHjHgg==}
     dependencies:
@@ -9293,16 +9267,6 @@ packages:
     resolution: {integrity: sha512-DZwaDVWm2NBvBxf7I0wXKXLKb/TxDnkV53sWhCvei1pRyTX3MVFpkvdYBknNBqPrxYuAIlPxEp7gJOidIauUkw==}
     dependencies:
       prop-types: 15.8.1
-    dev: false
-
-  /react-native-avoid-softinput@5.0.0(react-native@0.79.2)(react@19.0.0):
-    resolution: {integrity: sha512-hpyWhBLiWcMqKbnhH1uQ+xWjv8b9L4sxIUyWiRE4F2O7lk7KlOvMKcpdl7Xxb6cyBOUNQxxtqN0btOAC6hT6oQ==}
-    peerDependencies:
-      react: '>=18.2.0'
-      react-native: '>=0.71.0'
-    dependencies:
-      react: 19.0.0
-      react-native: 0.79.2(@babel/core@7.26.10)(@types/react@19.0.14)(react@19.0.0)
     dev: false
 
   /react-native-awesome-slider@2.9.0(react-native-gesture-handler@2.24.0)(react-native-reanimated@3.17.5)(react-native@0.79.2)(react@19.0.0):
