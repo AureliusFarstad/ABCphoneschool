@@ -35,8 +35,6 @@ export const CustomBounceIn = () => {
           stiffness: 100,
           damping: 10,
           velocity: 0,
-          restDisplacementThreshold: 0.001,
-          restSpeedThreshold: 0.001,
         }),
       },
     ],
@@ -45,8 +43,6 @@ export const CustomBounceIn = () => {
       stiffness: 100,
       damping: 10,
       velocity: 0,
-      restDisplacementThreshold: 0.001,
-      restSpeedThreshold: 0.001,
     }),
   };
 
@@ -93,8 +89,6 @@ export const DEFAULT_SPRING_CONFIG: WithSpringConfig = {
   mass: 1, // The mass of the object attached to the end of the spring. Default 1.
   stiffness: 100, // The spring stiffness coefficient. Default 100.
   overshootClamping: false, // Indicates whether the spring should be clamped and not bounce. Default false.
-  restSpeedThreshold: 0.001, // The speed at which the spring should be considered at rest in pixels per second. Default 0.001.
-  restDisplacementThreshold: 0.2, // The threshold of displacement from rest below which the spring should be considered at rest. Default 0.001.
 };
 
 export const DragDrop = ({ activeActivity }: DragDropProps) => {
