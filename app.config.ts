@@ -17,11 +17,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   userInterfaceStyle: "automatic",
-  splash: {
-    image: "./assets/images/splash.png",
-    resizeMode: "cover",
-    backgroundColor: "#2E3C4B",
-  },
   updates: {
     fallbackToCacheTimeout: 0,
   },
@@ -59,6 +54,17 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ["expo-font"],
     "expo-localization",
     "expo-router",
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/images/splash.png",
+        resizeMode: "cover",
+        backgroundColor: "#2E3C4B",
+        // Keep the full-screen splash image on iOS, as the old top-level
+        // `splash` config produced.
+        enableFullScreenImage_legacy: true,
+      },
+    ],
     ["expo-build-properties"],
     [
       "app-icon-badge",
