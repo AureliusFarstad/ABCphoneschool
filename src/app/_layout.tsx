@@ -34,8 +34,8 @@ LogBox.ignoreLogs([`Text strings must be rendered within a <Text> component.`]);
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-// Play clips even when the iPhone is on silent, and pause other apps' audio
-// (music, podcasts) while a clip plays. Android media ignores silent mode.
+// Play clips even when the phone is on silent, and pause other apps' audio
+// (music, podcasts) while a clip plays.
 setAudioModeAsync({ playsInSilentMode: true, interruptionMode: "doNotMix" });
 
 export default function RootLayout() {
