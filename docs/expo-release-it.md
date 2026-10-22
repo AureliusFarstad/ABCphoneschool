@@ -26,13 +26,9 @@ ruby -v
 bundle -v
 ```
 
-2. Make sure the iOS shared scheme exists before trying iOS builds.
+2. Native folders are generated, not committed.
 
-`expo-release-it` builds iOS with the Xcode scheme name, and this repo currently shows a deleted shared scheme file:
-
-- `ios/refugeeliteracyprojectapp.xcodeproj/xcshareddata/xcschemes/refugeeliteracyprojectapp.xcscheme`
-
-If that file stays deleted, `release:build:ios`, `release:upload:ios`, and `release:submit:ios` are likely to fail.
+`ios/` and `android/` are gitignored and generated from `app.config.ts` by `expo prebuild`. `expo-release-it build` runs prebuild itself, which also generates the iOS shared scheme (`refugeeliteracyprojectapp.xcscheme`) it builds with.
 
 3. Put the real credentials into `expo-release-it/key/` with these exact filenames:
 

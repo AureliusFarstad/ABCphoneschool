@@ -30,9 +30,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: Env.BUNDLE_ID,
+    appleTeamId: "7NNQHFTN5Z",
     buildNumber: String(VERSION_CODE),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSPhotoLibraryAddUsageDescription: "Allow $(PRODUCT_NAME) to save photos",
+      NSPhotoLibraryUsageDescription:
+        "Allow $(PRODUCT_NAME) to access your photos",
     },
   },
   experiments: {
