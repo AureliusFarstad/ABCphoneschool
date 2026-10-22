@@ -47,9 +47,6 @@ dependencies:
   expo-audio:
     specifier: ~55.0.18
     version: 55.0.18(expo-asset@55.0.20)(expo@55.0.32)(react-native@0.83.10)(react@19.2.0)
-  expo-av:
-    specifier: ^16.0.8
-    version: 16.0.8(expo@55.0.32)(react-native-web@0.21.4)(react-native@0.83.10)(react@19.2.0)
   expo-blur:
     specifier: ~55.0.18
     version: 55.0.18(expo@55.0.32)(react-native@0.83.10)(react@19.2.0)
@@ -6713,23 +6710,6 @@ packages:
       expo-asset: 55.0.20(expo@55.0.32)(react-native@0.83.10)(react@19.2.0)(typescript@5.9.3)
       react: 19.2.0
       react-native: 0.83.10(@babel/core@7.26.10)(@types/react@19.2.18)(react@19.2.0)
-    dev: false
-
-  /expo-av@16.0.8(expo@55.0.32)(react-native-web@0.21.4)(react-native@0.83.10)(react@19.2.0):
-    resolution: {integrity: sha512-cmVPftGR/ca7XBgs7R6ky36lF3OC0/MM/lpgX/yXqfv0jASTsh7AYX9JxHCwFmF+Z6JEB1vne9FDx4GiLcGreQ==}
-    peerDependencies:
-      expo: '*'
-      react: '*'
-      react-native: '*'
-      react-native-web: '*'
-    peerDependenciesMeta:
-      react-native-web:
-        optional: true
-    dependencies:
-      expo: 55.0.32(@babel/core@7.26.10)(@expo/dom-webview@55.0.6)(@expo/metro-runtime@55.0.12)(expo-router@55.0.18)(react-dom@19.2.0)(react-native-webview@13.16.0)(react-native-worklets@0.7.4)(react-native@0.83.10)(react@19.2.0)(typescript@5.9.3)
-      react: 19.2.0
-      react-native: 0.83.10(@babel/core@7.26.10)(@types/react@19.2.18)(react@19.2.0)
-      react-native-web: 0.21.4(react-dom@19.2.0)(react@19.2.0)
     dev: false
 
   /expo-blur@55.0.18(expo@55.0.32)(react-native@0.83.10)(react@19.2.0):

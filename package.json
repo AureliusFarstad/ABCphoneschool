@@ -60,7 +60,6 @@
     "expo": "~55.0.32",
     "expo-asset": "~55.0.20",
     "expo-audio": "~55.0.18",
-    "expo-av": "^16.0.8",
     "expo-blur": "~55.0.18",
     "expo-build-properties": "^55.0.18",
     "expo-constants": "~55.0.17",
