@@ -93,7 +93,7 @@ type HeaderProps = {
 
 const Header = ({ audioSource }: HeaderProps) => {
   const navigateToHome = useCallback(() => {
-    router.navigate("/");
+    router.dismissTo("/");
   }, []);
 
   return (

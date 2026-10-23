@@ -260,7 +260,7 @@ const GuidanceAudioHeader = ({
   activateInitialGuidancePulse,
 }: HeaderProps) => {
   const navigateToHome = useCallback(() => {
-    router.navigate("/");
+    router.dismissTo("/");
   }, []);
 
   console.log(title);

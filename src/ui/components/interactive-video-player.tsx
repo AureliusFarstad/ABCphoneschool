@@ -92,7 +92,7 @@ const InteractiveVideoPlayer = ({
 }) => {
   const navigateToHome = () => {
     stopSound(); // Stop audio explicitly before navigation
-    router.navigate({
+    router.dismissTo({
       pathname: "/",
     });
   };
