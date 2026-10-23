@@ -8,6 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import type { ViewInstance } from "react-native";
 import { StyleSheet, View } from "react-native";
 import {
   Gesture,
@@ -649,7 +650,7 @@ const DraggableAudioGame: React.FC = () => {
     useState<boolean>(false);
 
   // Reference to target drop circle
-  const dropCircleRef = useRef<View>(null);
+  const dropCircleRef = useRef<ViewInstance>(null);
 
   useEffect(() => {
     const newGameSets = shuffleArray([

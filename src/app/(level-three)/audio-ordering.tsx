@@ -1,5 +1,6 @@
 import type { RefObject } from "react";
 import React, { useRef, useState } from "react";
+import type { ViewInstance } from "react-native";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import {
   SafeAreaView,
@@ -176,7 +177,11 @@ type DestinationFunction<T> = (
   props: T,
 ) => (
   isCardActive: boolean,
-) => [DestinationComponentType, RefObject<View | null>, RefObject<View | null>];
+) => [
+  DestinationComponentType,
+  RefObject<ViewInstance | null>,
+  RefObject<ViewInstance | null>,
+];
 
 const CompletedCard: React.FC<CompletedCardProps> = ({
   gender = "male",
@@ -244,11 +249,11 @@ const createConversationDestinationComponent: DestinationFunction<
     isCardActive: boolean,
   ): [
     DestinationComponentType,
-    RefObject<View | null>,
-    RefObject<View | null>,
+    RefObject<ViewInstance | null>,
+    RefObject<ViewInstance | null>,
   ] => {
-    const dropCircleRef = useRef<View>(null);
-    const destinationContainerRef = useRef<View>(null);
+    const dropCircleRef = useRef<ViewInstance>(null);
+    const destinationContainerRef = useRef<ViewInstance>(null);
 
     const SpeakerCard = () => (
       <View

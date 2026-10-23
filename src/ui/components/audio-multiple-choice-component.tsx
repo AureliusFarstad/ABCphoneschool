@@ -2,6 +2,7 @@ import type { AudioPlayer } from "expo-audio";
 import { createAudioPlayer } from "expo-audio";
 import type { ReactElement, RefObject } from "react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { ViewInstance } from "react-native";
 import { StyleSheet, View } from "react-native";
 import {
   Gesture,
@@ -620,8 +621,8 @@ const DefaultUseDestinationComponent = (
   isCardActive: boolean,
 ): [
   DestinationComponentType,
-  RefObject<View | null>,
-  RefObject<View | null>,
+  RefObject<ViewInstance | null>,
+  RefObject<ViewInstance | null>,
 ] => {
   const styles = StyleSheet.create({
     flashcardContainer: {
@@ -662,8 +663,8 @@ const DefaultUseDestinationComponent = (
     },
   });
 
-  const dropCircleRef = useRef<View>(null);
-  const destinationContainerRef = useRef<View>(null); // New ref for entire destination area
+  const dropCircleRef = useRef<ViewInstance>(null);
+  const destinationContainerRef = useRef<ViewInstance>(null); // New ref for entire destination area
 
   // Use memo to prevent unnecessary re-renders
 

@@ -3,6 +3,7 @@ import { createAudioPlayer } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useFocusEffect } from "expo-router";
 import React from "react";
+import type { ScrollViewInstance } from "react-native";
 import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Animated, {
   Easing,
@@ -377,7 +378,7 @@ const Listening: React.FC = () => {
   const [playSessionId, setPlaySessionId] = React.useState(0);
   const [hasCompletedFirstFullCycle, setHasCompletedFirstFullCycle] =
     React.useState(false);
-  const scrollViewRef = React.useRef<ScrollView>(null);
+  const scrollViewRef = React.useRef<ScrollViewInstance>(null);
 
   const [cardStates, setCardStates] = React.useState<
     ("completed" | "disabled" | "hidden" | "playing")[]

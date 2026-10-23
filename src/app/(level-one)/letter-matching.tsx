@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { ViewInstance } from "react-native";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Path as SvgPath } from "react-native-svg";
@@ -55,8 +56,8 @@ const LetterTapMatching = () => {
   const [showScissorButton, setShowScissorButton] = useState(false);
 
   const tappedPath = useRef<Path | undefined>(undefined);
-  const svgContainerRef = useRef<View>(null);
-  const dotRefs = useRef<{ [key: string]: View }>({});
+  const svgContainerRef = useRef<ViewInstance>(null);
+  const dotRefs = useRef<{ [key: string]: ViewInstance }>({});
 
   const initializeGame = useCallback(() => {
     const letters = shuffleLetters(activeActivity.current.letters ?? []);

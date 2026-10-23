@@ -6,6 +6,7 @@ import React, {
   useRef,
   useState,
 } from "react";
+import type { ViewInstance } from "react-native";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -112,7 +113,11 @@ type DestinationFunction<T> = (
   props: T,
 ) => (
   isCardActive: boolean,
-) => [DestinationComponentType, RefObject<View | null>, RefObject<View | null>];
+) => [
+  DestinationComponentType,
+  RefObject<ViewInstance | null>,
+  RefObject<ViewInstance | null>,
+];
 
 const buttonColorProps: ButtonColorProps = {
   primaryColor: SECTION_COLORS.blending.primary,
@@ -140,10 +145,10 @@ const activeSmallButtonColorProps: ButtonColorProps = {
 
 const Screen = () => {
   // Create persistent refs for each button and the container
-  const firstButtonRef = useRef<View>(null);
-  const secondButtonRef = useRef<View>(null);
-  const thirdButtonRef = useRef<View>(null);
-  const destinationContainerRef = useRef<View>(null);
+  const firstButtonRef = useRef<ViewInstance>(null);
+  const secondButtonRef = useRef<ViewInstance>(null);
+  const thirdButtonRef = useRef<ViewInstance>(null);
+  const destinationContainerRef = useRef<ViewInstance>(null);
 
   const shuffle = useCallback((array: string[]) => {
     // Return a new shuffled array
@@ -202,8 +207,8 @@ const Screen = () => {
       isCardActive: boolean,
     ): [
       DestinationComponentType,
-      RefObject<View | null>,
-      RefObject<View | null>,
+      RefObject<ViewInstance | null>,
+      RefObject<ViewInstance | null>,
     ] => {
       const DestinationCard = () => {
         const { isLowercase } = useLetterCase();
@@ -326,7 +331,7 @@ const Screen = () => {
       };
 
       // Select the appropriate ref to return based on the current index
-      let activeDropRef: RefObject<View | null>;
+      let activeDropRef: RefObject<ViewInstance | null>;
       if (index === 0) {
         activeDropRef = firstButtonRef;
       } else if (index === 1) {

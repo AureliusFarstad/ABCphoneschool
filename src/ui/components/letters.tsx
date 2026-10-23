@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { ViewInstance } from "react-native";
 import { Alert, PanResponder, View } from "react-native";
 import Svg, { Path as SvgPath } from "react-native-svg";
 
@@ -198,28 +199,30 @@ const LetterTapMatching = () => {
                     selectedLeft?.id !== letter.id,
                 })}
                 onLayout={(e) => {
-                  e.target.measure((x, y, width, height, pageX, pageY) => {
-                    if (layoutValuesRef.current) {
-                      layoutValuesRef.current = [
-                        ...layoutValuesRef.current,
-                        {
-                          x: -x + pageX,
-                          y: y + pageY,
-                          id: letter.id,
-                          value: letter.value,
-                        },
-                      ];
-                    } else {
-                      layoutValuesRef.current = [
-                        {
-                          id: letter.id,
-                          x: -x + pageX,
-                          y: y + pageY,
-                          value: letter.value,
-                        },
-                      ];
-                    }
-                  });
+                  (e.target as ViewInstance).measure(
+                    (x, y, width, height, pageX, pageY) => {
+                      if (layoutValuesRef.current) {
+                        layoutValuesRef.current = [
+                          ...layoutValuesRef.current,
+                          {
+                            x: -x + pageX,
+                            y: y + pageY,
+                            id: letter.id,
+                            value: letter.value,
+                          },
+                        ];
+                      } else {
+                        layoutValuesRef.current = [
+                          {
+                            id: letter.id,
+                            x: -x + pageX,
+                            y: y + pageY,
+                            value: letter.value,
+                          },
+                        ];
+                      }
+                    },
+                  );
                 }}
               />
             </TouchableOpacity>

@@ -2,6 +2,7 @@ import type { AudioPlayer } from "expo-audio";
 import { createAudioPlayer } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { ViewInstance } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
@@ -662,7 +663,7 @@ const DraggableAudioGame: React.FC = () => {
     useState<boolean>(false);
 
   // Reference to target drop circle
-  const dropCircleRef = useRef<View>(null);
+  const dropCircleRef = useRef<ViewInstance>(null);
 
   // Function to shuffle array
   const shuffleArray = useCallback((array: string[]) => {
