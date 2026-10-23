@@ -65,7 +65,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         enableFullScreenImage_legacy: true,
       },
     ],
-    ["expo-build-properties"],
+    [
+      "expo-build-properties",
+      {
+        // SDK 58 turns R8 on for release builds by default. Keep it off, as
+        // at SDK 57, until release builds have been tested with it.
+        android: { enableMinifyInReleaseBuilds: false },
+      },
+    ],
     [
       "app-icon-badge",
       {
