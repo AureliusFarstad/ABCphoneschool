@@ -13,6 +13,7 @@ import { View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
 } from "react-native-reanimated";
 
@@ -48,14 +49,19 @@ const STROKE_WIDTH = 50;
 
 const radius = 40;
 
+// NOTE: Untested. Ported to Skia's PathBuilder API during the Expo SDK 58
+// upgrade (Skia 2.14 made SkPath immutable) without being run, because no
+// screen renders this component. It probably needs to be redeveloped as part
+// of the letter-formation feature.
 const AlphabetTracing = ({
   letter,
   isOverlayAnimation,
 }: AlphabetTracingProps) => {
-  const letterPath = Skia.Path.MakeFromSVGString(
+  const svgLetterPath = Skia.Path.MakeFromSVGString(
     letterCoordinatesToRender[letter as "A" | "T" | "P" | "I" | "N"],
   )!;
-  const drawPath = useSharedValue(Skia.Path.Make());
+  const drawPath = useSharedValue(Skia.PathBuilder.Make());
+  const drawnPath = useDerivedValue(() => drawPath.value.build());
 
   const x = useSharedValue(50);
   const y = useSharedValue(50);
@@ -86,7 +92,7 @@ const AlphabetTracing = ({
   const canvasHeight = 256;
 
   // Get the bounding box of the letter path
-  const bounds = letterPath.getBounds();
+  const bounds = svgLetterPath.getBounds();
 
   // Calculate the scaling factor to fit the letter within the canvas
   const scale =
@@ -101,10 +107,12 @@ const AlphabetTracing = ({
   const matrix = Skia.Matrix();
   matrix.scale(scale, scale);
   matrix.translate(centerX / scale, centerY / scale);
-  letterPath.transform(matrix);
+  const letterPath = Skia.PathBuilder.MakeFromPath(svgLetterPath)
+    .transform(matrix)
+    .build();
 
   useEffect(() => {
-    drawPath.value = Skia.Path.Make();
+    drawPath.value = Skia.PathBuilder.Make();
     const startPoint = getPathStartPoint(
       letterCoordinatesToRender[letter as "A" | "T" | "P" | "I" | "N"],
     );
@@ -143,7 +151,7 @@ const AlphabetTracing = ({
           <Mask
             mask={
               <Path
-                path={drawPath}
+                path={drawnPath}
                 color="black"
                 strokeWidth={STROKE_WIDTH}
                 style="stroke"
