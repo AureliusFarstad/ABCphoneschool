@@ -61,7 +61,6 @@ export default function LevelTwoTabLayout() {
 
   return (
     <Tabs
-      initialRouteName="flashcard"
       screenOptions={({}) => ({
         headerShown: false,
         tabBarStyle: {
