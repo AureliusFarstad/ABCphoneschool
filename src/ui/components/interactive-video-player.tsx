@@ -564,7 +564,6 @@ const InteractiveVideoPlayer = ({
                 style={styles.blurViewStyle} // Using StyleSheet for consistency
               >
                 <View>
-                  {" "}
                   {/* Removed className="flex flex-row" as PlayButton is centered by BlurView */}
                   <Pressable
                     onPress={handlePlay}
