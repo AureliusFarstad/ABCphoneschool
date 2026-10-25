@@ -1,7 +1,7 @@
 {
   "name": "refugeeliteracyproject",
   "main": "expo-router/entry",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "scripts": {
     "start": "cross-env EXPO_NO_DOTENV=1 expo start --dev-client",
     "prebuild": "cross-env EXPO_NO_DOTENV=1 pnpm expo prebuild",

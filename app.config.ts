@@ -3,8 +3,8 @@ import type { ConfigContext, ExpoConfig } from "@expo/config";
 import { ClientEnv, Env } from "./env";
 
 // Required by expo-release-it for version management.
-const VERSION_NAME = "1.0.1";
-const VERSION_CODE = 1000001;
+const VERSION_NAME = "1.0.3";
+const VERSION_CODE = 1000003;
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
