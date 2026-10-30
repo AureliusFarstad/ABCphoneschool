@@ -1,7 +1,8 @@
-import { Audio } from "expo-av";
-import type { Sound } from "expo-av/build/Audio";
+import type { AudioPlayer } from "expo-audio";
+import { createAudioPlayer } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { ViewInstance } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
@@ -30,7 +31,7 @@ import {
 } from "@/assets/blending";
 import { APP_COLORS } from "@/constants/routes";
 import { useGuideAudio } from "@/core/hooks/useGuideAudio";
-import { audioStoreActions } from "@/core/store/audio";
+import { audioStoreActions, releasePlayer } from "@/core/store/audio";
 import GuidanceAudioHeader from "@/ui/core/headers/guidance-audio";
 import { useLetterCase } from "@/ui/core/headers/letter-case-context";
 import { AnimatedAudioButton } from "@/ui/icons/animated-audio-button-wrapper";
@@ -651,7 +652,7 @@ const DraggableAudioGame: React.FC = () => {
 
   // Audio playback tracking
   const [playingButtonId, setPlayingButtonId] = useState<string | null>(null);
-  const currentSound = useRef<Sound | null>(null);
+  const currentSound = useRef<AudioPlayer | null>(null);
 
   // Game state
   const [currentGameSetIndex, setCurrentGameSetIndex] = useState(0);
@@ -662,7 +663,7 @@ const DraggableAudioGame: React.FC = () => {
     useState<boolean>(false);
 
   // Reference to target drop circle
-  const dropCircleRef = useRef<View>(null);
+  const dropCircleRef = useRef<ViewInstance>(null);
 
   // Function to shuffle array
   const shuffleArray = useCallback((array: string[]) => {
@@ -712,8 +713,7 @@ const DraggableAudioGame: React.FC = () => {
   const resetAllButtonPositions = useCallback(() => {
     // Cancel any ongoing animations that might interfere
     if (currentSound.current) {
-      currentSound.current.stopAsync().catch(() => {});
-      currentSound.current.unloadAsync().catch(() => {});
+      releasePlayer(currentSound.current);
       currentSound.current = null;
     }
 
@@ -774,12 +774,7 @@ const DraggableAudioGame: React.FC = () => {
       // Stop any currently playing audio from this component
       if (currentSound.current) {
         try {
-          await currentSound.current.stopAsync();
-          try {
-            await currentSound.current.unloadAsync();
-          } catch (e) {
-            // Ignore error
-          }
+          releasePlayer(currentSound.current);
         } catch (e) {
           // Ignore error cleaning up previous sound
         }
@@ -795,9 +790,8 @@ const DraggableAudioGame: React.FC = () => {
       setPlayingButtonId(buttonId);
 
       try {
-        const { sound } = await Audio.Sound.createAsync(audioFile, {
-          shouldPlay: true,
-        });
+        const sound = createAudioPlayer(audioFile);
+        sound.play();
 
         // Store the current sound
         currentSound.current = sound;
@@ -806,7 +800,7 @@ const DraggableAudioGame: React.FC = () => {
         let isHandled = false;
 
         // Listen for playback status updates
-        sound.setOnPlaybackStatusUpdate((status) => {
+        sound.addListener("playbackStatusUpdate", (status) => {
           if (isHandled) return;
 
           if (!status.isLoaded) return;
@@ -834,7 +828,7 @@ const DraggableAudioGame: React.FC = () => {
 
             // Unload the sound
             try {
-              sound.unloadAsync();
+              releasePlayer(sound);
             } catch (e) {
               // Ignore error
             }
@@ -871,7 +865,7 @@ const DraggableAudioGame: React.FC = () => {
 
           try {
             try {
-              sound.unloadAsync();
+              releasePlayer(sound);
             } catch (e) {
               // Ignore error
             }
@@ -901,7 +895,7 @@ const DraggableAudioGame: React.FC = () => {
     return () => {
       if (currentSound.current) {
         try {
-          currentSound.current.unloadAsync();
+          releasePlayer(currentSound.current);
         } catch (e) {
           // Ignore error
         }
@@ -942,8 +936,7 @@ const DraggableAudioGame: React.FC = () => {
           setTimeout(() => {
             // Stop any ongoing animations or sounds
             if (currentSound.current) {
-              currentSound.current.stopAsync().catch(() => {});
-              currentSound.current.unloadAsync().catch(() => {});
+              releasePlayer(currentSound.current);
               currentSound.current = null;
             }
             setPlayingButtonId(null); // Ensure playing ID is cleared

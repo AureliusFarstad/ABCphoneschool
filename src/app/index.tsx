@@ -75,7 +75,6 @@ const HomeHeader = () => {
           className="mb-10 bg-colors-green-500"
           style={homeStyles.levelBanner}
         >
-          {" "}
           {/* add hidden to hide */}
           <Text className="py-2 text-center text-4xl text-white">1</Text>
         </View>

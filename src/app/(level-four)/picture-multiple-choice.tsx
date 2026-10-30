@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet, View } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 import {
   requireCompleteEnglishAudioForWord,
@@ -161,7 +164,10 @@ const AudioMultipleChoice = () => {
   }
 
   return (
-    <SafeAreaView style={globalStyles.safeAreaView}>
+    <SafeAreaView
+      style={globalStyles.safeAreaView}
+      edges={["top", "right", "left"]}
+    >
       <View
         style={{
           height:

@@ -3,13 +3,12 @@ import type { ConfigContext, ExpoConfig } from "@expo/config";
 import { ClientEnv, Env } from "./env";
 
 // Required by expo-release-it for version management.
-const VERSION_NAME = "1.0.1";
-const VERSION_CODE = 1000001;
+const VERSION_NAME = "1.0.3";
+const VERSION_CODE = 1000003;
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: Env.NAME,
-  newArchEnabled: true,
   description: `${Env.NAME} Mobile App`,
   owner: Env.EXPO_ACCOUNT_OWNER,
   scheme: Env.SCHEME,
@@ -18,11 +17,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   orientation: "portrait",
   icon: "./assets/images/icon.png",
   userInterfaceStyle: "automatic",
-  splash: {
-    image: "./assets/images/splash.png",
-    resizeMode: "cover",
-    backgroundColor: "#2E3C4B",
-  },
   updates: {
     fallbackToCacheTimeout: 0,
   },
@@ -30,9 +24,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     bundleIdentifier: Env.BUNDLE_ID,
+    appleTeamId: "7NNQHFTN5Z",
     buildNumber: String(VERSION_CODE),
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
+      NSPhotoLibraryAddUsageDescription: "Allow $(PRODUCT_NAME) to save photos",
+      NSPhotoLibraryUsageDescription:
+        "Allow $(PRODUCT_NAME) to access your photos",
     },
   },
   experiments: {
@@ -45,7 +43,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: Env.PACKAGE,
     versionCode: VERSION_CODE,
-    edgeToEdgeEnabled: true,
   },
   web: {
     favicon: "./assets/images/favicon.png",
@@ -57,7 +54,25 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     ["expo-font"],
     "expo-localization",
     "expo-router",
-    ["expo-build-properties"],
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/images/splash.png",
+        resizeMode: "cover",
+        backgroundColor: "#2E3C4B",
+        // Keep the full-screen splash image on iOS, as the old top-level
+        // `splash` config produced.
+        enableFullScreenImage_legacy: true,
+      },
+    ],
+    [
+      "expo-build-properties",
+      {
+        // SDK 58 turns R8 on for release builds by default. Keep it off, as
+        // at SDK 57, until release builds have been tested with it.
+        android: { enableMinifyInReleaseBuilds: false },
+      },
+    ],
     [
       "app-icon-badge",
       {

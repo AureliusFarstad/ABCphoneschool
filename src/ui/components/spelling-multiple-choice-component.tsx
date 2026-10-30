@@ -1,7 +1,8 @@
-import { Audio } from "expo-av";
-import type { Sound } from "expo-av/build/Audio";
+import type { AudioPlayer } from "expo-audio";
+import { createAudioPlayer } from "expo-audio";
 import type { ReactElement, RefObject } from "react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import type { ViewInstance } from "react-native";
 import { Dimensions, StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
@@ -21,7 +22,7 @@ import Reanimated, {
 } from "react-native-reanimated";
 
 import { APP_COLORS, SECTION_COLORS } from "@/constants/routes";
-import { audioStoreActions } from "@/core/store/audio";
+import { audioStoreActions, releasePlayer } from "@/core/store/audio";
 import { useLetterCase } from "@/ui/core/headers/letter-case-context";
 import type { ButtonColorProps } from "@/ui/icons/circular/color-scheme";
 
@@ -554,8 +555,8 @@ const DefaultUseDestinationComponent = (
   isCardActive: boolean,
 ): [
   DestinationComponentType,
-  RefObject<View | null>,
-  RefObject<View | null>,
+  RefObject<ViewInstance | null>,
+  RefObject<ViewInstance | null>,
 ] => {
   const styles = StyleSheet.create({
     flashcardContainer: {
@@ -596,8 +597,8 @@ const DefaultUseDestinationComponent = (
     },
   });
 
-  const dropCircleRef = useRef<View>(null);
-  const destinationContainerRef = useRef<View>(null); // New ref for entire destination area
+  const dropCircleRef = useRef<ViewInstance>(null);
+  const destinationContainerRef = useRef<ViewInstance>(null); // New ref for entire destination area
 
   // Use memo to prevent unnecessary re-renders
 
@@ -655,7 +656,7 @@ const SpellingMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
     useState<boolean>(false);
 
   // Refs
-  const currentSound = useRef<Sound | null>(null);
+  const currentSound = useRef<AudioPlayer | null>(null);
 
   // Setup destination component
   const [DestinationComponent, dropCircleRef, destinationContainerRef] =
@@ -841,7 +842,7 @@ const SpellingMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
       );
       if (currentSound.current) {
         try {
-          currentSound.current.unloadAsync();
+          releasePlayer(currentSound.current);
         } catch (e) {
           // Ignore error
         }
@@ -859,12 +860,7 @@ const SpellingMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
       // Stop any currently playing audio from this component
       if (currentSound.current) {
         try {
-          await currentSound.current.stopAsync();
-          try {
-            await currentSound.current.unloadAsync();
-          } catch (e) {
-            // Ignore error
-          }
+          releasePlayer(currentSound.current);
         } catch (e) {
           // Ignore error cleaning up previous sound
         }
@@ -875,9 +871,8 @@ const SpellingMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
       setPlayingButtonId(buttonId);
 
       try {
-        const { sound } = await Audio.Sound.createAsync(audioFile, {
-          shouldPlay: true,
-        });
+        const sound = createAudioPlayer(audioFile);
+        sound.play();
 
         // Store the current sound
         currentSound.current = sound;
@@ -886,7 +881,7 @@ const SpellingMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
         let isHandled = false;
 
         // Listen for playback status updates
-        sound.setOnPlaybackStatusUpdate((status) => {
+        sound.addListener("playbackStatusUpdate", (status) => {
           if (isHandled) return;
 
           if (!status.isLoaded) return;
@@ -907,7 +902,7 @@ const SpellingMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
 
             // Unload the sound
             try {
-              sound.unloadAsync();
+              releasePlayer(sound);
             } catch (e) {
               // Ignore error
             }
@@ -937,7 +932,7 @@ const SpellingMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
 
           try {
             try {
-              sound.unloadAsync();
+              releasePlayer(sound);
             } catch (e) {
               // Ignore error
             }
@@ -978,8 +973,7 @@ const SpellingMultipleChoice: React.FC<AudioMultipleChoiceProps> = ({
           );
           setTimeout(() => {
             if (currentSound.current) {
-              currentSound.current.stopAsync().catch(() => {});
-              currentSound.current.unloadAsync().catch(() => {});
+              releasePlayer(currentSound.current);
               currentSound.current = null;
             }
             setPlayingButtonId(null);

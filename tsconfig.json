@@ -4,10 +4,10 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "strict": true,
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@env": ["./src/core/env.js"]
+      "@env": ["./src/core/env.js"],
+      "assets/*": ["./assets/*"]
     },
     "esModuleInterop": true,
     "checkJs": true

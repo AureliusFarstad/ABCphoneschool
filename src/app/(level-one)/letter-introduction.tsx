@@ -1,7 +1,6 @@
 import clsx from "clsx";
-import type { AVPlaybackSource, AVPlaybackStatus } from "expo-av";
-import { Audio } from "expo-av";
-import type { Sound } from "expo-av/build/Audio";
+import type { AudioPlayer, AudioSource, AudioStatus } from "expo-audio";
+import { createAudioPlayer } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, TouchableOpacity } from "react-native";
@@ -10,7 +9,7 @@ import Svg, { Line } from "react-native-svg";
 import { APP_COLORS } from "@/constants/routes";
 import { MS_300 } from "@/constants/timing";
 import { useGuideAudio } from "@/core/hooks/useGuideAudio";
-import { audioStoreActions } from "@/core/store/audio";
+import { audioStoreActions, releasePlayer } from "@/core/store/audio";
 import { useLevelStore } from "@/core/store/levels";
 import { Pressable, SafeAreaView, Text, View } from "@/ui";
 import AnimatedLetterComponent from "@/ui/components/home/animated-letter-component";
@@ -93,7 +92,7 @@ const buttonStyles: ButtonColorProps = {
 
 const LetterIntroduction = () => {
   const { levels, updateLevels } = useLevelStore();
-  const [sound, setSound] = useState<Sound>();
+  const [sound, setSound] = useState<AudioPlayer>();
 
   const [isAlphabeticPlaying, setIsAlphabeticPlaying] = useState(false);
   const [isPhoneticPlaying, setIsPhoneticPlaying] = useState(false);
@@ -121,14 +120,14 @@ const LetterIntroduction = () => {
   const activitiesInCurrentSection =
     levels[0].modules[0].sections[0].activities;
 
-  const playSound = async (playbackSource: AVPlaybackSource) => {
+  const playSound = async (playbackSource: AudioSource) => {
     try {
       // Stop any currently playing audio globally
       await audioStoreActions.stopAllAudio();
 
       if (sound) {
         try {
-          await sound.unloadAsync();
+          releasePlayer(sound);
         } catch (e) {
           // Ignore error if sound is already unloaded
         }
@@ -137,26 +136,29 @@ const LetterIntroduction = () => {
       // Activate keep awake when starting audio
       activateKeepAwakeAsync("letter-audio");
 
-      const { sound: soundResponse } = await Audio.Sound.createAsync(
-        playbackSource,
-        { shouldPlay: true },
-      );
+      const soundResponse = createAudioPlayer(playbackSource);
+      soundResponse.play();
 
       setSound(soundResponse);
 
       const completionPromise = new Promise<void>((resolve, _reject) => {
-        const onPlaybackStatusUpdate = (status: AVPlaybackStatus) => {
+        const onPlaybackStatusUpdate = (status: AudioStatus) => {
           if (status.isLoaded && status.didJustFinish) {
             deactivateKeepAwake("letter-audio");
             audioStoreActions.clearCurrentSound();
-            soundResponse
-              .unloadAsync()
-              .then(() => resolve())
-              .catch((e) => console.warn("Error unloading sound:", e));
+            try {
+              releasePlayer(soundResponse);
+              resolve();
+            } catch (e) {
+              console.warn("Error unloading sound:", e);
+            }
           }
         };
 
-        soundResponse.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
+        soundResponse.addListener(
+          "playbackStatusUpdate",
+          onPlaybackStatusUpdate,
+        );
       });
 
       // Register with global audio store AFTER setting up listeners
@@ -173,7 +175,7 @@ const LetterIntroduction = () => {
   useEffect(() => {
     return sound
       ? () => {
-          sound.unloadAsync();
+          releasePlayer(sound);
         }
       : undefined;
   }, [sound, activeActivity]);

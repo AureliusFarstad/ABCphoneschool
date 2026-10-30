@@ -1,19 +1,17 @@
-import type { AVPlaybackSource } from "expo-av";
-import { Audio } from "expo-av";
-import type { Sound } from "expo-av/build/Audio";
+import type { AudioPlayer, AudioSource } from "expo-audio";
+import { createAudioPlayer } from "expo-audio";
 import { useCallback, useRef } from "react";
 
-import { audioStoreActions } from "@/core/store/audio";
+import { audioStoreActions, releasePlayer } from "@/core/store/audio";
 
 const useSound = () => {
-  const soundRef = useRef<Sound | null>(null);
+  const soundRef = useRef<AudioPlayer | null>(null);
   const isPlayingRef = useRef(false);
 
   const stopSound = useCallback(async () => {
     if (soundRef.current) {
       try {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
+        releasePlayer(soundRef.current);
         soundRef.current = null;
         isPlayingRef.current = false;
         audioStoreActions.clearCurrentSound();
@@ -26,7 +24,7 @@ const useSound = () => {
   const pauseSound = useCallback(async () => {
     if (soundRef.current && isPlayingRef.current) {
       try {
-        await soundRef.current.pauseAsync();
+        soundRef.current.pause();
         isPlayingRef.current = false;
       } catch (error) {
         console.log("Error pausing sound:", error);
@@ -37,7 +35,7 @@ const useSound = () => {
   const resumeSound = useCallback(async () => {
     if (soundRef.current && !isPlayingRef.current) {
       try {
-        await soundRef.current.playAsync();
+        soundRef.current.play();
         isPlayingRef.current = true;
       } catch (error) {
         console.log("Error resuming sound:", error);
@@ -46,7 +44,7 @@ const useSound = () => {
   }, []);
 
   const playSound = useCallback(
-    async (soundSource: AVPlaybackSource | string) => {
+    async (soundSource: AudioSource | string) => {
       try {
         // Stop any currently playing audio globally
         await audioStoreActions.stopAllAudio();
@@ -61,22 +59,20 @@ const useSound = () => {
         }
 
         // Create and play new sound
-        const { sound: soundResponse } = await Audio.Sound.createAsync(
-          source as AVPlaybackSource,
-          { shouldPlay: true, isLooping: false },
-        );
+        const soundResponse = createAudioPlayer(source);
+        soundResponse.play();
 
         if (soundResponse) {
           soundRef.current = soundResponse;
           isPlayingRef.current = true;
 
           // Set up status update listener
-          soundResponse.setOnPlaybackStatusUpdate((status) => {
+          soundResponse.addListener("playbackStatusUpdate", (status) => {
             if (status.isLoaded && status.didJustFinish) {
               isPlayingRef.current = false;
               audioStoreActions.clearCurrentSound();
               // Unload sound when finished? Or let cleanup handle it?
-              // soundResponse.unloadAsync(); // Optional: aggressive cleanup
+              // releasePlayer(soundResponse); // Optional: aggressive cleanup
             }
           });
 
@@ -97,8 +93,7 @@ const useSound = () => {
     // First try the normal way
     if (soundRef.current) {
       try {
-        await soundRef.current.stopAsync();
-        await soundRef.current.unloadAsync();
+        releasePlayer(soundRef.current);
 
         // Force release the reference
         soundRef.current = null;

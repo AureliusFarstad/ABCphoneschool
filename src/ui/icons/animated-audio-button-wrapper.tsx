@@ -1,6 +1,5 @@
-import type { AVPlaybackSource } from "expo-av";
-import { Audio } from "expo-av";
-import type { Sound } from "expo-av/build/Audio";
+import type { AudioPlayer, AudioSource } from "expo-audio";
+import { createAudioPlayer } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import * as React from "react";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
@@ -14,12 +13,12 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { audioStoreActions } from "@/core/store/audio";
+import { audioStoreActions, releasePlayer } from "@/core/store/audio";
 
 type AnimatedAudioButtonProps = {
   width?: number;
   height?: number;
-  audioSource: AVPlaybackSource | string;
+  audioSource: AudioSource | string;
   children: React.ReactNode;
   borderColor?: string;
   borderWidth?: number;
@@ -39,7 +38,7 @@ export const AnimatedAudioButton = ({
   onPress,
   disabled,
 }: AnimatedAudioButtonProps) => {
-  const [sound, setSound] = React.useState<Sound>();
+  const [sound, setSound] = React.useState<AudioPlayer>();
   const [isPlaying, setIsPlaying] = React.useState(false);
 
   const borderOpacity = useSharedValue(0);
@@ -62,7 +61,7 @@ export const AnimatedAudioButton = ({
     return () => {
       if (sound) {
         try {
-          sound.unloadAsync();
+          releasePlayer(sound);
         } catch (e) {
           // Ignore error if sound is already unloaded or not loaded
         }
@@ -99,8 +98,7 @@ export const AnimatedAudioButton = ({
 
       if (sound) {
         try {
-          await sound.stopAsync();
-          await sound.unloadAsync();
+          releasePlayer(sound);
         } catch (e) {
           // Ignore error if sound is already unloaded
         }
@@ -114,26 +112,29 @@ export const AnimatedAudioButton = ({
           ? { uri: audioSource }
           : audioSource;
 
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        source as AVPlaybackSource,
-        { shouldPlay: true },
-      );
+      const newSound = createAudioPlayer(source);
+      newSound.play();
       setSound(newSound);
 
-      newSound.setOnPlaybackStatusUpdate((status) => {
-        if (!status.isLoaded || status.didJustFinish) {
+      newSound.addListener("playbackStatusUpdate", (status) => {
+        if (status.didJustFinish) {
           stopAnimation();
           audioStoreActions.clearCurrentSound();
           return;
         }
 
-        if (!status.isPlaying && !status.didJustFinish && isPlaying) {
+        // Status updates arrive before the sound has loaded; ignore those
+        if (!status.isLoaded) {
+          return;
+        }
+
+        if (!status.playing && isPlaying) {
           stopAnimation();
         }
       });
 
-      // Register with global audio store
-      await audioStoreActions.registerSound(newSound);
+      // Register with global audio store; stop animating if another sound stops this one
+      await audioStoreActions.registerSound(newSound, stopAnimation);
 
       onPress?.();
     } catch (error) {

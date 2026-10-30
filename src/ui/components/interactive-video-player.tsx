@@ -3,11 +3,10 @@
 // 117:5   error  'resumeSound' is assigned a value but never used. Allowed unused vars must match /^_/u                            unused-imports/no-unused-vars
 // 120:16  error  'isAudioPlaying' is assigned a value but never used. Allowed unused vars must match /^_/u                         unused-imports/no-unused-vars
 
-import { useIsFocused } from "@react-navigation/native";
 import welcome from "assets/videos/welcome";
 import { BlurView } from "expo-blur";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
-import { router } from "expo-router";
+import { router, useIsFocused } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
@@ -93,7 +92,7 @@ const InteractiveVideoPlayer = ({
 }) => {
   const navigateToHome = () => {
     stopSound(); // Stop audio explicitly before navigation
-    router.navigate({
+    router.dismissTo({
       pathname: "/",
     });
   };
@@ -216,7 +215,7 @@ const InteractiveVideoPlayer = ({
           playSound(segment.audio)
             .then((sound) => {
               if (sound) {
-                sound.setOnPlaybackStatusUpdate((status) => {
+                sound.addListener("playbackStatusUpdate", (status) => {
                   if (status.isLoaded && status.didJustFinish) {
                     console.log("Audio completed");
                     setAudioCompleted(true);
@@ -326,7 +325,7 @@ const InteractiveVideoPlayer = ({
       playSound(currentSegment.audio)
         .then((sound) => {
           if (sound) {
-            sound.setOnPlaybackStatusUpdate((status) => {
+            sound.addListener("playbackStatusUpdate", (status) => {
               if (status.isLoaded && status.didJustFinish) {
                 console.log("Play button: Audio completed");
                 setAudioCompleted(true);
@@ -565,7 +564,6 @@ const InteractiveVideoPlayer = ({
                 style={styles.blurViewStyle} // Using StyleSheet for consistency
               >
                 <View>
-                  {" "}
                   {/* Removed className="flex flex-row" as PlayButton is centered by BlurView */}
                   <Pressable
                     onPress={handlePlay}
@@ -602,11 +600,11 @@ const styles = StyleSheet.create({
   },
   overlayContainer: {
     // Fills the videoScreenContainer
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   blurViewStyle: {
     // Fills its parent (overlayContainer) and centers content
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
   },

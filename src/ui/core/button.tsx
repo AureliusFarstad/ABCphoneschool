@@ -1,5 +1,5 @@
 import React from "react";
-import type { PressableProps, View } from "react-native";
+import type { PressableInstance, PressableProps } from "react-native";
 import { ActivityIndicator, Pressable, Text } from "react-native";
 import type { VariantProps } from "tailwind-variants";
 import { tv } from "tailwind-variants";
@@ -91,7 +91,7 @@ interface Props extends ButtonVariants, Omit<PressableProps, "disabled"> {
   textClassName?: string;
 }
 
-export const Button = React.forwardRef<View, Props>(
+export const Button = React.forwardRef<PressableInstance, Props>(
   (
     {
       label: text,

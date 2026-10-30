@@ -7,8 +7,8 @@ import {
   Inter_600SemiBold,
   useFonts,
 } from "@expo-google-fonts/inter";
-import { ThemeProvider } from "@react-navigation/native";
-import { Stack, usePathname } from "expo-router";
+import { setAudioModeAsync } from "expo-audio";
+import { Stack, ThemeProvider, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useRef } from "react";
 import { LogBox } from "react-native";
@@ -32,6 +32,10 @@ LogBox.ignoreLogs([`Text strings must be rendered within a <Text> component.`]);
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+// Play clips even when the phone is on silent, and pause other apps' audio
+// (music, podcasts) while a clip plays.
+setAudioModeAsync({ playsInSilentMode: true, interruptionMode: "doNotMix" });
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({

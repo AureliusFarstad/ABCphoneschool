@@ -40,6 +40,8 @@ cd refugee-literacy-project`
 
 `pnpm ios`
 
+The `ios/` and `android/` folders are generated from `app.config.ts` and are not committed. After changing `app.config.ts` or adding a native dependency, regenerate them with `pnpm prebuild --clean`.
+
 4. Start the Development Server:
 
 `pnpm start`

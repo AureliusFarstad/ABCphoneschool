@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Tabs } from "expo-router/js-tabs";
 import React from "react";
 import type { JSX } from "react/jsx-runtime";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -61,7 +61,6 @@ export default function LevelTwoTabLayout() {
 
   return (
     <Tabs
-      initialRouteName="flashcard"
       screenOptions={({}) => ({
         headerShown: false,
         tabBarStyle: {
