@@ -10,11 +10,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ALPHABET_LETTERS } from "@/assets/alphabet";
 import { requireHomeScreenAudioByScreenName } from "@/assets/guidance-audio/audio-sources";
 import WELCOME_VIDEO_BANNER from "@/assets/home/svg/welcome-video.svg";
-import { APP_COLORS, LESSONS } from "@/constants/routes";
+import { APP_COLORS, LESSONS, SECTION_COLORS } from "@/constants/routes";
 import { useUser } from "@/core/store/user";
 import LanguageSelectionScreen from "@/ui/components/language-select-screen";
+import { LetterTile } from "@/ui/components/letter-tile";
+import { useLetterCase } from "@/ui/core/headers/letter-case-context";
 import { CheckIcon } from "@/ui/icons";
 import { AnimatedAudioButton } from "@/ui/icons/animated-audio-button-wrapper";
 import type { ButtonColorProps } from "@/ui/icons/circular/color-scheme";
@@ -35,6 +38,20 @@ const LEVEL_WIDTH =
   WIDTH - (BUTTON_WIDTH + BUTTON_MARGIN_OUTSIDE + BUTTON_MARGIN_INSIDE) * 2;
 const LEVEL_ASPECT_RATIO = 118 / 164;
 const LEVEL_HEIGHT = LEVEL_WIDTH * LEVEL_ASPECT_RATIO;
+
+// Letters Card Styling (same width as the welcome video banner)
+const LETTERS_CARD_PADDING = 16;
+const LETTERS_CARD_GAP = 8;
+const LETTERS_CARD_PREVIEW_COUNT = 4; // Followed by an ellipsis tile
+const LETTERS_CARD_TILE_SIZE = Math.min(
+  60,
+  Math.floor(
+    (WELCOME_WIDTH -
+      LETTERS_CARD_PADDING * 2 -
+      LETTERS_CARD_GAP * LETTERS_CARD_PREVIEW_COUNT) /
+      (LETTERS_CARD_PREVIEW_COUNT + 1),
+  ),
+);
 
 // TODO: Move out of file. Shared with header.
 const buttonColorProps: ButtonColorProps = {
@@ -85,6 +102,37 @@ const HomeHeader = () => {
 
 const Separator = () => <View className="my-8" />;
 
+// Opens the grid of every letter's animation
+const LettersCard = () => {
+  const { isLowercase } = useLetterCase();
+
+  return (
+    <View>
+      <Separator />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="All letters"
+        onPress={() => {
+          router.push("/letters");
+        }}
+      >
+        <View style={homeStyles.lettersCard}>
+          {ALPHABET_LETTERS.slice(0, LETTERS_CARD_PREVIEW_COUNT).map(
+            (letter) => (
+              <LetterTile
+                key={letter}
+                label={isLowercase ? letter : letter.toUpperCase()}
+                size={LETTERS_CARD_TILE_SIZE}
+              />
+            ),
+          )}
+          <LetterTile label="…" size={LETTERS_CARD_TILE_SIZE} />
+        </View>
+      </Pressable>
+    </View>
+  );
+};
+
 const homeStyles = StyleSheet.create({
   welcomeVideoBannerContainer: {
     width: "100%",
@@ -97,6 +145,16 @@ const homeStyles = StyleSheet.create({
   },
   levelBanner: {
     backgroundColor: APP_COLORS.green,
+  },
+  lettersCard: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: LETTERS_CARD_GAP,
+    width: WELCOME_WIDTH,
+    marginHorizontal: HORIZONTAL_PADDING,
+    padding: LETTERS_CARD_PADDING,
+    borderRadius: 16,
+    backgroundColor: SECTION_COLORS.alphabet.primary,
   },
   speakerButtonStyle: {
     width: BUTTON_WIDTH,
@@ -179,6 +237,7 @@ const Home = () => {
       <View>
         <FlatList
           ListHeaderComponent={HomeHeader}
+          ListFooterComponent={LettersCard}
           data={LESSONS}
           renderItem={renderItem}
           keyExtractor={(_) => _.id}

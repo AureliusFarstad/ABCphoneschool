@@ -246,6 +246,8 @@ type HeaderProps = {
   onStopGuide?: () => void;
   isPlaying: boolean;
   showLetterCaseSwitch?: boolean;
+  // Hide for screens that don't have guidance audio yet
+  showGuidanceButton?: boolean;
   initialPulseColorForGuidance?: string;
   activateInitialGuidancePulse?: boolean;
 };
@@ -256,6 +258,7 @@ const GuidanceAudioHeader = ({
   onStopGuide,
   isPlaying,
   showLetterCaseSwitch = true,
+  showGuidanceButton = true,
   initialPulseColorForGuidance,
   activateInitialGuidancePulse,
 }: HeaderProps) => {
@@ -295,21 +298,28 @@ const GuidanceAudioHeader = ({
         {showLetterCaseSwitch && <LetterCaseSwitch />}
       </View>
       <View className="flex-row items-center space-x-4">
-        <AnimatedAudioButton
-          className="p-2"
-          onPress={onPressGuide || (() => {})}
-          isPlaying={isPlaying}
-          width={SIZE}
-          height={SIZE}
-          borderColor={APP_COLORS.green}
-          icon={
-            <View style={{ width: SIZE, height: SIZE }}>
-              <EmptyHeadButton {...buttonColorProps} />
-            </View>
-          }
-          initialPulseColor={initialPulseColorForGuidance}
-          isInitialPulseConditionMet={activateInitialGuidancePulse}
-        />
+        {showGuidanceButton ? (
+          <AnimatedAudioButton
+            className="p-2"
+            onPress={onPressGuide || (() => {})}
+            isPlaying={isPlaying}
+            width={SIZE}
+            height={SIZE}
+            borderColor={APP_COLORS.green}
+            icon={
+              <View style={{ width: SIZE, height: SIZE }}>
+                <EmptyHeadButton {...buttonColorProps} />
+              </View>
+            }
+            initialPulseColor={initialPulseColorForGuidance}
+            isInitialPulseConditionMet={activateInitialGuidancePulse}
+          />
+        ) : (
+          // Same footprint as the button, so the case switch stays centered
+          <View className="p-2">
+            <View style={{ width: SIZE, height: SIZE }} />
+          </View>
+        )}
       </View>
     </View>
   );
