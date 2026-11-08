@@ -839,8 +839,17 @@ const DraggableAudioGame: React.FC = () => {
           }
         });
 
-        // Register with global audio store
-        await audioStoreActions.registerSound(sound);
+        // Register with global audio store; clear the ring at once if another sound stops this one
+        await audioStoreActions.registerSound(sound, () => {
+          if (isHandled) return;
+          isHandled = true;
+
+          deactivateKeepAwake("audio-playback-l4");
+          setPlayingButtonId((prevId) => (prevId === buttonId ? null : prevId));
+          if (currentSound.current === sound) {
+            currentSound.current = null;
+          }
+        });
 
         // Add a safety timeout
         const timeoutId = setTimeout(() => {

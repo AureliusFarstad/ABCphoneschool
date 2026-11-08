@@ -3,7 +3,11 @@ import { createAudioPlayer } from "expo-audio";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { audioStoreActions, releasePlayer } from "@/core/store/audio";
+import {
+  audioStoreActions,
+  releasePlayer,
+  useAudioStore,
+} from "@/core/store/audio";
 import type { CombinedRoutes } from "@/types/navigation-types";
 import { getGuides } from "@/utils/shared";
 
@@ -131,8 +135,13 @@ export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
             },
           );
 
-          // Register with global audio store
-          await audioStoreActions.registerSound(newSound);
+          // Register with global audio store; end guidance if another sound stops this clip
+          await audioStoreActions.registerSound(newSound, () => {
+            if (soundRef.current === newSound) {
+              soundRef.current = null;
+            }
+            if (isMountedRef.current) setIsPlaying(false);
+          });
         } catch (error) {
           console.error(
             "[useGuideAudio] playSequentialSounds: Error creating or playing sound:",
@@ -180,7 +189,10 @@ export const useGuideAudio = ({ screenName, module }: GuideAudioProps) => {
     if (isMountedRef.current) {
       setIsPlaying(false);
     }
-    audioStoreActions.clearCurrentSound();
+    // Leave the store alone if another sound owns it, or that sound would keep playing untracked
+    if (soundToStop && useAudioStore.getState().currentSound === soundToStop) {
+      audioStoreActions.clearCurrentSound();
+    }
   }, []);
 
   const playGuideAudio = useCallback(async () => {

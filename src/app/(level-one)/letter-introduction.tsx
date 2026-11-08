@@ -1,7 +1,4 @@
 import clsx from "clsx";
-import type { AudioPlayer, AudioSource, AudioStatus } from "expo-audio";
-import { createAudioPlayer } from "expo-audio";
-import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, TouchableOpacity } from "react-native";
 import Svg, { Line } from "react-native-svg";
@@ -9,12 +6,12 @@ import Svg, { Line } from "react-native-svg";
 import { APP_COLORS } from "@/constants/routes";
 import { MS_300 } from "@/constants/timing";
 import { useGuideAudio } from "@/core/hooks/useGuideAudio";
-import { audioStoreActions, releasePlayer } from "@/core/store/audio";
+import { audioStoreActions } from "@/core/store/audio";
 import { useLevelStore } from "@/core/store/levels";
 import { Pressable, SafeAreaView, Text, View } from "@/ui";
 import AnimatedLetterComponent from "@/ui/components/home/animated-letter-component";
 import GuidanceAudioHeader from "@/ui/core/headers/guidance-audio";
-import { AnimatedBreathingView } from "@/ui/icons/animated-breathing-view";
+import { AnimatedAudioButton } from "@/ui/icons/animated-audio-button-wrapper";
 import type { ButtonColorProps } from "@/ui/icons/circular/color-scheme";
 import { EarButton } from "@/ui/icons/circular/ear-button";
 import { NameButton } from "@/ui/icons/circular/name-button";
@@ -92,11 +89,6 @@ const buttonStyles: ButtonColorProps = {
 
 const LetterIntroduction = () => {
   const { levels, updateLevels } = useLevelStore();
-  const [sound, setSound] = useState<AudioPlayer>();
-
-  const [isAlphabeticPlaying, setIsAlphabeticPlaying] = useState(false);
-  const [isPhoneticPlaying, setIsPhoneticPlaying] = useState(false);
-  const [hasPlayedGuidanceOnce, setHasPlayedGuidanceOnce] = useState(false);
 
   // const [isAnimating, setIsAnimating] = useState(false);
   const onAnimationStart = () => {
@@ -119,66 +111,6 @@ const LetterIntroduction = () => {
 
   const activitiesInCurrentSection =
     levels[0].modules[0].sections[0].activities;
-
-  const playSound = async (playbackSource: AudioSource) => {
-    try {
-      // Stop any currently playing audio globally
-      await audioStoreActions.stopAllAudio();
-
-      if (sound) {
-        try {
-          releasePlayer(sound);
-        } catch (e) {
-          // Ignore error if sound is already unloaded
-        }
-      }
-
-      // Activate keep awake when starting audio
-      activateKeepAwakeAsync("letter-audio");
-
-      const soundResponse = createAudioPlayer(playbackSource);
-      soundResponse.play();
-
-      setSound(soundResponse);
-
-      const completionPromise = new Promise<void>((resolve, _reject) => {
-        const onPlaybackStatusUpdate = (status: AudioStatus) => {
-          if (status.isLoaded && status.didJustFinish) {
-            deactivateKeepAwake("letter-audio");
-            audioStoreActions.clearCurrentSound();
-            try {
-              releasePlayer(soundResponse);
-              resolve();
-            } catch (e) {
-              console.warn("Error unloading sound:", e);
-            }
-          }
-        };
-
-        soundResponse.addListener(
-          "playbackStatusUpdate",
-          onPlaybackStatusUpdate,
-        );
-      });
-
-      // Register with global audio store AFTER setting up listeners
-      await audioStoreActions.registerSound(soundResponse);
-
-      return completionPromise;
-    } catch (error) {
-      console.log("error in playSound", error);
-      deactivateKeepAwake("letter-audio");
-      throw error;
-    }
-  };
-
-  useEffect(() => {
-    return sound
-      ? () => {
-          releasePlayer(sound);
-        }
-      : undefined;
-  }, [sound, activeActivity]);
 
   const incrementProgress = (
     type:
@@ -271,13 +203,6 @@ const LetterIntroduction = () => {
     }
   }, [activitiesInCurrentSection, levels]);
 
-  const handlePlayGuideAudio = () => {
-    if (!hasPlayedGuidanceOnce) {
-      setHasPlayedGuidanceOnce(true);
-    }
-    playGuideAudio();
-  };
-
   return (
     <SafeAreaView
       style={globalStyles.safeAreaView}
@@ -286,54 +211,35 @@ const LetterIntroduction = () => {
       <GuidanceAudioHeader
         title="Letter Introduction"
         isPlaying={isPlaying}
-        onPressGuide={handlePlayGuideAudio}
+        onPressGuide={playGuideAudio}
         onStopGuide={stopGuideAudio}
         showLetterCaseSwitch={false}
       />
       <View className="flex flex-1 flex-col bg-[#F2EFF0] pb-4">
         <View className="m-4 flex flex-1 flex-col overflow-hidden rounded-xl border-2 border-purple-500 bg-white ">
-          <View className="flex items-center justify-center pt-4">
+          {/* z-50 keeps the audio buttons above AnimatedLetterComponent's full-card overlay */}
+          <View className="z-50 flex items-center justify-center pt-4">
             <View className="flex flex-row gap-4 rounded-full p-2">
-              <TouchableOpacity
-                onPress={async () => {
-                  try {
-                    setIsAlphabeticPlaying(true);
-                    await playSound(activeActivity.sound.alphabeticAudioSrc);
-                    incrementProgress("ALPHABETIC_SOUND");
-                  } catch (error) {
-                    console.log("Error playing alphabetic sound:", error);
-                  } finally {
-                    setIsAlphabeticPlaying(false);
-                  }
-                }}
-                className="z-50 flex size-[70] items-center justify-center rounded-full bg-colors-purple-500"
+              <AnimatedAudioButton
+                audioSource={activeActivity.sound.alphabeticAudioSrc}
+                width={70}
+                height={70}
+                onPress={() => incrementProgress("ALPHABETIC_SOUND")}
               >
-                <NameButton {...buttonStyles} />
-                <AnimatedBreathingView
-                  isPlaying={isAlphabeticPlaying}
-                  size={70}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={async () => {
-                  try {
-                    setIsPhoneticPlaying(true);
-                    await playSound(activeActivity.sound.phoneticAudioSrc);
-                    incrementProgress("PHONETIC_SOUND");
-                  } catch (error) {
-                    console.log("Error playing phonetic sound:", error);
-                  } finally {
-                    setIsPhoneticPlaying(false);
-                  }
-                }}
-                className="z-50 flex size-[70] items-center justify-center rounded-full bg-colors-purple-500"
+                <View className="size-[70] items-center justify-center rounded-full bg-colors-purple-500">
+                  <NameButton {...buttonStyles} />
+                </View>
+              </AnimatedAudioButton>
+              <AnimatedAudioButton
+                audioSource={activeActivity.sound.phoneticAudioSrc}
+                width={70}
+                height={70}
+                onPress={() => incrementProgress("PHONETIC_SOUND")}
               >
-                <EarButton {...buttonStyles} />
-                <AnimatedBreathingView
-                  isPlaying={isPhoneticPlaying}
-                  size={70}
-                />
-              </TouchableOpacity>
+                <View className="size-[70] items-center justify-center rounded-full bg-colors-purple-500">
+                  <EarButton {...buttonStyles} />
+                </View>
+              </AnimatedAudioButton>
             </View>
           </View>
           <View
@@ -378,6 +284,8 @@ const LetterIntroduction = () => {
                   // "bg-gray-200": isAnimating,
                 })}
                 onPress={() => {
+                  // The audio buttons don't stop when their source changes
+                  audioStoreActions.stopAllAudio();
                   /**
                    * update current activity
                    */
